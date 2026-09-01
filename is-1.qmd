@@ -1,0 +1,188 @@
+[33mcommit 5f5add6500ac10b4a4c2a9cc6aa055d84824381f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: degenovatristan <t.degenova30@ncf.edu>
+Date:   Tue Sep 1 15:15:06 2026 +0000
+
+    initial version
+
+[33mcommit 29ac06d899c0406f9a4f79a242d9ffcb2ab6504c[m[33m ([m[1;31mupstream/main[m[33m, [m[1;31mupstream/HEAD[m[33m, [m[1;31morigin/main[m[33m)[m
+Merge: 15ffc5b 9192c35
+Author: David Kane <dave.kane@gmail.com>
+Date:   Sat Aug 22 06:18:11 2026 -0400
+
+    Merge pull request #50 from PPBDS/banner-redesign
+    
+    Banner redesign, connect-repo wrapper, and first launcher CI
+
+[33mcommit 9192c353e50164b76eff2dfd9264f6d5ee8cedd9[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Sat Aug 22 05:56:24 2026 -0400
+
+    Repin to 1.1.4 (course package refresh)
+    
+    Image v1.1.4 rebakes the four PPBDS packages from GitHub HEAD — misc.
+    tutorials' R4DS clean-up and the vscode.tutorials updates (devcontainers
+    #33). Confirmed on GHCR before this bump.
+    
+    Kept on the branch deliberately: merging this pin is what puts students
+    on 1.1.4, and that is Friday's decision. Landing it here also lets the
+    launcher-tests CI validate this PR's new banner and wrapper inside the
+    image students will actually get.
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit fcba432783451d2519721734b30b85a00e06bb29[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Fri Aug 21 20:30:57 2026 -0400
+
+    Terminal label "Welcome!" + shellcheck in CI
+    
+    - postAttachCommand key renamed so the tab reads "Codespaces: Welcome!"
+      (the platform prefix is not removable; noted in the comment).
+    - New shellcheck job on the plain runner enforces the repo's stated shell
+      convention, honored but unenforced until now. All three scripts were
+      clean when added; it promptly flagged the one intentional SC2016 in the
+      new assertion, now waived inline with a reason.
+    - Test asserts the postAttachCommand key, guarding the label from a
+      silent revert (the label itself is platform-applied, so this is the
+      most CI can see).
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit b902ec410dec71f5581bafcea018e011c367acf5[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Thu Aug 20 07:07:06 2026 -0400
+
+    Drop the Python extensions: fewer Activity Bar icons, same Python workflow
+    
+    ms-python.python and ms-toolsai.jupyter removed (David, 2026-08-20):
+    students use only Explorer, Search, Source Control, Extensions, and R
+    Tutorials, and these two contributed Python/Jupyter icons plus Welcome
+    walkthrough cards for tooling the course doesn't teach interactively.
+    The Python workflow that matters survives — `quarto render` drives the
+    image's Jupyter engine from the CLI with no editor extension — and the
+    in-editor notebook/IntelliSense layer is what's dropped. The two
+    python.* settings that existed solely for the extension go with it
+    (restore-from-git-history pointers left in comments). Side effect: the
+    Python source of the first-terminal relaunch warning disappears too.
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit eda24fbf3f833645e5828b02728d5d17d449929c[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Thu Aug 20 05:39:43 2026 -0400
+
+    Address Copilot review: honest banner fallback + explicit pin error
+    
+    - welcome.sh: the banner advertises `connect-repo` only when the wrapper
+      actually landed executable; otherwise it falls back to the long-form
+      command. The script is deliberately non-fatal, so a failed install must
+      not leave the banner teaching a command that won't work.
+    - launcher-tests: failure-injection test ($HOME/.local/bin as a regular
+      file) proving the fallback both appears and suppresses the short form.
+    - workflow: pin-extraction failure now emits an explicit ::error with the
+      file and likely cause instead of dying on a bare test(1).
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit 0328f8f29fa81667c2316c584af515debfd0559e[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Wed Aug 19 22:54:43 2026 -0400
+
+    Add launcher tests: welcome.sh + wrapper CI inside the student image
+    
+    First CI for this repo. A pin job reads the image tag LIVE from
+    devcontainer.json (so this is NOT a sixth pin location), then the test
+    job runs .devcontainer/tests/launcher-tests.sh inside that image:
+    banner content (present/absent/retired lines), wrapper install and
+    foreign-directory execution, usage-error path, marker silence, and
+    .bashrc idempotency. Out of scope by design: anything needing a GitHub
+    login (connect-repo's real work stays a manual live-Codespace check).
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit 15abc51cfa9ac83b7e62da0cd4ed4a7b9a82dab2[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Wed Aug 19 22:54:43 2026 -0400
+
+    Banner redesign + `connect-repo` wrapper on PATH
+    
+    Banner (welcome.sh): provenance line (image pin + setup date) moves ABOVE
+    the box — it is instructor-facing; the guide link and the clear-hint are
+    removed; the box now shows exactly one action:
+    
+        connect-repo <insert-repo-name>
+    
+    welcome.sh installs that wrapper into ~/.local/bin (already on PATH via
+    the image's profile edits) on every attach. An exec wrapper, not a
+    symlink: connect-repo.sh self-locates via BASH_SOURCE, which a symlink
+    would break. The wrapper works from any folder, including the student's
+    own repo; the long-form invocation still works.
+    
+    connect-repo.sh --help/usage text and STUDENT_WORKFLOW.md now teach the
+    short command; devcontainer.json's stale banner comment corrected.
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit 15ffc5b030186a7ed9707ab263a6b16b8a72ee6b[m
+Merge: 0491f8e 70d6960
+Author: David Kane <dave.kane@gmail.com>
+Date:   Fri Aug 14 15:58:13 2026 +0200
+
+    Merge pull request #49 from PPBDS/repin-1.1.3
+    
+    Repin to 1.1.3 (course package refresh) + pin vscode-R extension
+
+[33mcommit 70d696061b92ef5918d67ff1b327258292ca8859[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Fri Aug 14 15:57:59 2026 +0200
+
+    Repin to 1.1.3 (course package refresh)
+    
+    Image v1.1.3 rebakes tutorial.helpers and vscode.tutorials from
+    today's GitHub HEAD — first-week-of-class content (devcontainers#32).
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit 166f6c8896490378818e8f38049d557aa5e8433d[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Fri Aug 14 15:57:59 2026 +0200
+
+    Pin reditorsupport.r@2.8.8 (pre-3.0.0 protection)
+    
+    vscode-R 3.0.0 replaces the session-watcher architecture with a
+    bundled "sess" R package the image does not bake; unpinned, every
+    student Codespace would auto-update the day it ships and break
+    plotting behind an install prompt. Pin now, migrate deliberately
+    (bake sess + bump this pin + drop the image's Rprofile.site shim in
+    one release). See REditorSupport/vscode-R#1696.
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit 0491f8ebac01959712eae380af10c623fa05be81[m
+Merge: ec44c22 d9fcd2f
+Author: David Kane <dave.kane@gmail.com>
+Date:   Thu Aug 13 07:51:00 2026 +0200
+
+    Merge pull request #48 from PPBDS/repin-1.1.2
+    
+    Repin to 1.1.2 (R 4.6 plot-pane repair) + Chrome/Edge guidance
+
+[33mcommit d9fcd2f428fe99936fb27ceacc7db26efcee359e[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Thu Aug 13 07:50:52 2026 +0200
+
+    Repin to 1.1.2 (R 4.6 plot-pane repair)
+    
+    Image v1.1.2 adds the Rprofile.site .First shim that reattaches the
+    vscode-R session watcher on R 4.6 — plot() reaches the plot pane again
+    instead of silently writing Rplots.pdf (devcontainers#31).
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+[33mcommit 9def78e73d18022f7e40f30be0372c5eb7569f3c[m
+Author: David Kane <dave.kane@gmail.com>
+Date:   Thu Aug 13 07:21:35 2026 +0200
+
+    Student docs: use Chrome or Edge, not Safari
+    
+    Safari/WebKit mispositions VS 
